@@ -1,0 +1,17 @@
+{
+  "platforms": [
+    "apple",
+    "android",
+    "web"
+  ],
+  "apple": {
+    "modules": [
+      "RnAngleGlModule"
+    ]
+  },
+  "android": {
+    "modules": [
+      "expo.modules.rnanglegl.RnAngleGlModule"
+    ]
+  }
+}
