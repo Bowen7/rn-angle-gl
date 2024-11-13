@@ -1,0 +1,86 @@
+name: Build Frameworks
+
+on: 
+  workflow_dispatch
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout ANGLE sources
+        run: |
+          git clone https://github.com/google/angle ./ANGLE
+      - name: Fetch depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ./ANGLE/depot_tools
+      - name: Build
+        run: |
+          cd ANGLE
+          export PATH="$(pwd)/depot_tools:$PATH"
+          python scripts/bootstrap.py
+          gclient sync
+          gn gen out/Release --args="is_debug=false target_os=\"ios\" ios_enable_code_signing=false angle_enable_metal=true angle_enable_wgpu=false ios_deployment_target=\"14.0\" angle_build_all=false target_environment=\"device\""
+          autoninja -C out/Release
+      - name: Prepare Theos
+        uses: Randomblock1/theos-action@v1.4
+      - name: Build framework
+        run: |
+          mv Makefile.ios Makefile
+          mkdir Frameworks
+          cp -R ./ANGLE/out/Release/libEGL.framework ./Frameworks
+          cp -R ./ANGLE/out/Release/libGLESv2.framework ./Frameworks
+          ls
+          make
+      - name: ZIP Frameworks
+        run: |
+          cd Frameworks
+          zip --symlinks -r ${GITHUB_WORKSPACE}/libEGL.framework.ios.zip libEGL.framework
+          zip --symlinks -r ${GITHUB_WORKSPACE}/libGLESv2.framework.ios.zip libGLESv2.framework
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2.1.4
+        with:
+          path: |
+            libEGL.framework.ios.zip
+            libGLESv2.framework.ios.zip
+          name: ios
+
+  build-ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout ANGLE sources
+        run: |
+          git clone https://github.com/google/angle ./ANGLE
+      - name: Fetch depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ./ANGLE/depot_tools
+      - name: Build
+        run: |
+          cd ANGLE
+          export PATH="$(pwd)/depot_tools:$PATH"
+          python scripts/bootstrap.py
+          gclient sync
+          gn gen out/Release --args="is_debug=false target_os=\"ios\" ios_enable_code_signing=false angle_enable_metal=true angle_enable_wgpu=false ios_deployment_target=\"14.0\" angle_build_all=false target_environment=\"simulator\""
+          autoninja -C out/Release
+      - name: Prepare Theos
+        uses: Randomblock1/theos-action@v1.4
+      - name: Build framework
+        run: |
+          mkdir Frameworks
+          cp -R ./ANGLE/out/Release/libEGL.framework ./Frameworks
+          cp -R ./ANGLE/out/Release/libGLESv2.framework ./Frameworks
+          ls ./ANGLE/out/Release/
+      - name: ZIP Frameworks
+        run: |
+          cd Frameworks
+          zip --symlinks -r ${GITHUB_WORKSPACE}/libEGL.framework.ios.simulator.zip libEGL.framework
+          zip --symlinks -r ${GITHUB_WORKSPACE}/libGLESv2.framework.ios.simulator.zip libGLESv2.framework
+          cd ../.theos/obj/iphone_simulator
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2.1.4
+        with:
+          path: |
+            libEGL.framework.ios.simulator.zip
+            libGLESv2.framework.ios.simulator.zip
+          name: ios.simulator
