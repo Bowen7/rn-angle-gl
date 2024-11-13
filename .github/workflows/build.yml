@@ -38,7 +38,7 @@ jobs:
           zip --symlinks -r ${GITHUB_WORKSPACE}/libEGL.framework.ios.zip libEGL.framework
           zip --symlinks -r ${GITHUB_WORKSPACE}/libGLESv2.framework.ios.zip libGLESv2.framework
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2.1.4
+        uses: actions/upload-artifact@v4
         with:
           path: |
             libEGL.framework.ios.zip
@@ -78,7 +78,7 @@ jobs:
           zip --symlinks -r ${GITHUB_WORKSPACE}/libGLESv2.framework.ios.simulator.zip libGLESv2.framework
           cd ../.theos/obj/iphone_simulator
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2.1.4
+        uses: actions/upload-artifact@v4
         with:
           path: |
             libEGL.framework.ios.simulator.zip
