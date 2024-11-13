@@ -22,16 +22,12 @@ jobs:
           gclient sync
           gn gen out/Release --args="is_debug=false target_os=\"ios\" ios_enable_code_signing=false angle_enable_metal=true angle_enable_wgpu=false ios_deployment_target=\"14.0\" angle_build_all=false target_environment=\"device\""
           autoninja -C out/Release
-      - name: Prepare Theos
-        uses: Randomblock1/theos-action@v1.4
-      - name: Build framework
+      - name: Move framework
         run: |
-          mv Makefile.ios Makefile
           mkdir Frameworks
           cp -R ./ANGLE/out/Release/libEGL.framework ./Frameworks
           cp -R ./ANGLE/out/Release/libGLESv2.framework ./Frameworks
-          ls
-          make
+          ls ./ANGLE/out/Release/
       - name: ZIP Frameworks
         run: |
           cd Frameworks
@@ -63,9 +59,7 @@ jobs:
           gclient sync
           gn gen out/Release --args="is_debug=false target_os=\"ios\" ios_enable_code_signing=false angle_enable_metal=true angle_enable_wgpu=false ios_deployment_target=\"14.0\" angle_build_all=false target_environment=\"simulator\""
           autoninja -C out/Release
-      - name: Prepare Theos
-        uses: Randomblock1/theos-action@v1.4
-      - name: Build framework
+      - name: Move framework
         run: |
           mkdir Frameworks
           cp -R ./ANGLE/out/Release/libEGL.framework ./Frameworks
@@ -76,7 +70,6 @@ jobs:
           cd Frameworks
           zip --symlinks -r ${GITHUB_WORKSPACE}/libEGL.framework.ios.simulator.zip libEGL.framework
           zip --symlinks -r ${GITHUB_WORKSPACE}/libGLESv2.framework.ios.simulator.zip libGLESv2.framework
-          cd ../.theos/obj/iphone_simulator
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
