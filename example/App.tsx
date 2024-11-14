@@ -1,73 +1,56 @@
-import { useEvent } from 'expo';
-import RnAngleGl, { RnAngleGlView } from 'rn-angle-gl';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { View } from "react-native";
+import { GLView, ExpoWebGLRenderingContext } from "rn-angle-gl";
 
-export default function App() {
-  const onChangePayload = useEvent(RnAngleGl, 'onChange');
+function onContextCreate(gl: ExpoWebGLRenderingContext) {
+  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+  gl.clearColor(0, 1, 1, 1);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{RnAngleGl.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{RnAngleGl.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await RnAngleGl.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
-        <Group name="Views">
-          <RnAngleGlView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
-          />
-        </Group>
-      </ScrollView>
-    </SafeAreaView>
+  // Create vertex shader (shape & position)
+  const vert = gl.createShader(gl.VERTEX_SHADER)!;
+  gl.shaderSource(
+    vert,
+    `
+    void main(void) {
+      gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+      gl_PointSize = 150.0;
+    }
+  `
   );
+  gl.compileShader(vert);
+
+  // Create fragment shader (color)
+  const frag = gl.createShader(gl.FRAGMENT_SHADER)!;
+  gl.shaderSource(
+    frag,
+    `
+    void main(void) {
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+  `
+  );
+  gl.compileShader(frag);
+
+  // Link together into a program
+  const program = gl.createProgram()!;
+  gl.attachShader(program, vert);
+  gl.attachShader(program, frag);
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.POINTS, 0, 1);
+
+  gl.flush();
+  gl.endFrameEXP();
 }
 
-function Group(props: { name: string; children: React.ReactNode }) {
+export default function App() {
   return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <GLView
+        style={{ width: 300, height: 300 }}
+        onContextCreate={onContextCreate}
+      />
     </View>
   );
 }
-
-const styles = {
-  header: {
-    fontSize: 30,
-    margin: 20,
-  },
-  groupHeader: {
-    fontSize: 20,
-    marginBottom: 20,
-  },
-  group: {
-    margin: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#eee',
-  },
-  view: {
-    flex: 1,
-    height: 200,
-  },
-};

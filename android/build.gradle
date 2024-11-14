@@ -1,43 +1,66 @@
 apply plugin: 'com.android.library'
 
-group = 'expo.modules.rnanglegl'
-version = '0.1.0'
+group = 'host.exp.exponent'
+version = '15.0.1'
+
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
 
 def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
 apply from: expoModulesCorePlugin
 applyKotlinExpoModulesCorePlugin()
 useCoreDependencies()
+useDefaultAndroidSdkVersions()
 useExpoPublishing()
 
-// If you want to use the managed Android SDK versions from expo-modules-core, set this to true.
-// The Android SDK versions will be bumped from time to time in SDK releases and may introduce breaking changes in your module code.
-// Most of the time, you may like to manage the Android SDK versions yourself.
-def useManagedAndroidSdkVersions = false
-if (useManagedAndroidSdkVersions) {
-  useDefaultAndroidSdkVersions()
-} else {
-  buildscript {
-    // Simple helper that allows the root project to override versions declared by this library.
-    ext.safeExtGet = { prop, fallback ->
-      rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+android {
+  if (rootProject.hasProperty("ndkPath")) {
+    ndkPath rootProject.ext.ndkPath
+  }
+  if (rootProject.hasProperty("ndkVersion")) {
+    ndkVersion rootProject.ext.ndkVersion
+  }
+
+  namespace "expo.modules.gl"
+  defaultConfig {
+    versionCode 31
+    versionName "15.0.1"
+
+    externalNativeBuild {
+      cmake {
+        abiFilters (*reactNativeArchitectures())
+        arguments "-DANDROID_STL=c++_shared"
+      }
     }
   }
-  project.android {
-    compileSdkVersion safeExtGet("compileSdkVersion", 34)
-    defaultConfig {
-      minSdkVersion safeExtGet("minSdkVersion", 21)
-      targetSdkVersion safeExtGet("targetSdkVersion", 34)
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
     }
+  }
+
+  buildFeatures {
+    prefab true
+  }
+
+  packagingOptions {
+    // Gradle will add cmake target dependencies into packaging.
+    excludes += [
+        "**/libc++_shared.so",
+        "**/libjsi.so",
+    ]
+  }
+
+  configurations {
+    extractHeaders
+    extractJNI
   }
 }
 
-android {
-  namespace "expo.modules.rnanglegl"
-  defaultConfig {
-    versionCode 1
-    versionName "0.1.0"
-  }
-  lintOptions {
-    abortOnError false
-  }
+dependencies {
+  compileOnly 'com.facebook.soloader:soloader:0.8.2'
+  compileOnly 'com.facebook.react:react-android'
 }

@@ -1,17 +1,14 @@
 {
-  "platforms": [
-    "apple",
-    "android",
-    "web"
-  ],
-  "apple": {
-    "modules": [
-      "RnAngleGlModule"
-    ]
+  "name": "rn-angle-gl",
+  "platforms": ["ios", "android"],
+  "ios": {
+    "podspecPath": "./RnAngleGl.podspec",
+    "modules": ["GLViewModule"]
   },
   "android": {
     "modules": [
-      "expo.modules.rnanglegl.RnAngleGlModule"
+      "expo.modules.gl.GLViewModule",
+      "expo.modules.gl.GLObjectManagerModule"
     ]
   }
 }
