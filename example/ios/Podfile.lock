@@ -1844,7 +1844,7 @@ SPEC CHECKSUMS:
   React-utils: 5362bd16a9563f9916e7a56c011ddc533507650f
   ReactCodegen: 865bafc5c17ec2181620ced1a32c39c38ab2951d
   ReactCommon: 422e364463f33e336fc4db196aeb50fd801d90d6
-  RnAngleGl: 4dadafaf06adccfa55840e1d4a3e27207672ab1b
+  RnAngleGl: aa94f02365b2e1e27a512d83127f6bbe09c13dc8
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: db69236006b8b1c6d55ab453390c882306cbf219
 

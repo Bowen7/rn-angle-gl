@@ -8,8 +8,9 @@
 #import <ExpoModulesCore/EXJavaScriptContextProvider.h>
 #import <ExpoModulesCore/EXFileSystemInterface.h>
 
-#include <OpenGLES/ES3/gl.h>
-#include <OpenGLES/ES3/glext.h>
+#include <libGLESv2/GLES3/gl3.h>
+#include <libGLESv2/GLES2/gl2ext.h>
+#include <libEGL/EGL/eglext_angle.h>
 
 #define BLOCK_SAFE_RUN(block, ...) block ? block(__VA_ARGS__) : (void) nil
 
@@ -35,7 +36,34 @@
     _moduleRegistry = moduleRegistry;
     _objectManager = (EXGLObjectManager *)[_moduleRegistry getExportedModuleOfClass:[EXGLObjectManager class]];
     _glQueue = dispatch_queue_create("host.exp.gl", DISPATCH_QUEUE_SERIAL);
-    _eaglCtx = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3] ?: [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+
+    EGLAttrib attribs[] = {
+      EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
+      EGL_POWER_PREFERENCE_ANGLE, EGL_HIGH_POWER_ANGLE,
+      EGL_NONE
+    };
+    EGLDisplay display = eglGetPlatformDisplay(
+      EGL_PLATFORM_ANGLE_ANGLE,
+      reinterpret_cast<void*>(EGL_DEFAULT_DISPLAY),
+      attribs
+    );
+    EGLint attrib_list[] = [
+      EGL_BLUE_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_RED_SIZE, 8,
+      EGL_DEPTH_SIZE, 24,
+      EGL_NONE,
+    ];
+    EGLConfig config;
+    EGLint num_config = 0;
+    eglChooseConfig(display, attrib_list, &config, 1, &num_config);
+    EGLint contextAttributes[] = {
+      EGL_CONTEXT_CLIENT_VERSION, 2,
+      EGL_NONE,
+    };
+
+    EGLContext _eglCtx = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributes);
+
     _isContextReady = NO;
     _wasPrepareCalled = NO;
     _appIsBackgrounded = NO;
@@ -50,24 +78,48 @@
   return _isContextReady;
 }
 
-- (nonnull EAGLContext *)createSharedEAGLContext
+- (nonnull EGLContext)createSharedEGLContext
 {
-  return [[EAGLContext alloc] initWithAPI:[_eaglCtx API] sharegroup:[_eaglCtx sharegroup]];
+  EGLAttrib attribs[] = {
+    EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
+    EGL_POWER_PREFERENCE_ANGLE, EGL_HIGH_POWER_ANGLE,
+    EGL_NONE
+  };
+  EGLDisplay display = eglGetPlatformDisplay(
+    EGL_PLATFORM_ANGLE_ANGLE,
+    reinterpret_cast<void*>(EGL_DEFAULT_DISPLAY),
+    attribs
+  );
+  EGLint attrib_list[] = [
+    EGL_BLUE_SIZE, 8,
+    EGL_GREEN_SIZE, 8,
+    EGL_RED_SIZE, 8,
+    EGL_DEPTH_SIZE, 24,
+    EGL_NONE,
+  ];
+  EGLConfig config;
+  EGLint num_config = 0;
+  eglChooseConfig(display, attrib_list, &config, 1, &num_config);
+  EGLint contextAttributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE,
+  };
+  return eglCreateContext(display, config, _eglCtx, contextAttributes);
 }
 
-- (void)runInEAGLContext:(EAGLContext*)context callback:(void(^)(void))callback
+- (void)runInEGLContext:(EGLContext)context callback:(void(^)(void))callback
 {
-  [EAGLContext setCurrentContext:context];
+  [EGLContext setCurrentContext:context];
   callback();
   glFlush();
-  [EAGLContext setCurrentContext:nil];
+  [EGLContext setCurrentContext:nil];
 }
 
 - (void)runAsync:(void(^)(void))callback
 {
   if (_glQueue) {
     dispatch_async(_glQueue, ^{
-      [self runInEAGLContext:self->_eaglCtx callback:callback];
+      [self runInEGLContext:self->_eglCtx callback:callback];
     });
   }
 }

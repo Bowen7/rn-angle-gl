@@ -5,7 +5,7 @@
 #include <GLES3/gl3.h>
 #endif
 #ifdef __APPLE__
-#include <OpenGLES/ES3/gl.h>
+#include <libGLESv2/GLES3/gl3.h>
 #endif
 
 #ifdef __cplusplus

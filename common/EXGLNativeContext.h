@@ -7,9 +7,9 @@
 #include <GLES3/gl3ext.h>
 #endif
 #ifdef __APPLE__
-#include <OpenGLES/EAGL.h>
-#include <OpenGLES/ES3/gl.h>
-#include <OpenGLES/ES3/glext.h>
+#include <libEGL/EGL/egl.h>
+#include <libGLESv2/GLES3/gl3.h>
+#include <libGLESv2/GLES2/gl2ext.h>
 #endif
 
 #include "EXTypedArrayApi.h"

@@ -140,6 +140,7 @@ glesContext EXGLContext::prepareOpenGLESContext() {
   addBlockingToNextBatch([&] {
     std::string version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
     double glesVersion = strtod(version.substr(10).c_str(), 0);
+    printf("glesVersion: %f\n", glesVersion);
     this->supportsWebGL2 = glesVersion >= 3.0;
 
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);

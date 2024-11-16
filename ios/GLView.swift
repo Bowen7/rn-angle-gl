@@ -10,7 +10,7 @@ internal final class GLView: ExpoView, EXGLContextDelegate {
     return EXGLContext(delegate: self, andModuleRegistry: legacyModuleRegistry)
   }()
 
-  lazy var eaglContext: EAGLContext = glContext.createSharedEAGLContext()
+  lazy var eglContext: EGLContext = glContext.createSharedEGLContext()
 
   // Props
   var msaaSamples: Int = 0
@@ -33,9 +33,9 @@ internal final class GLView: ExpoView, EXGLContextDelegate {
   var isRenderbufferPresented: Bool = true
   var viewBuffersSize: CGSize = .zero
 
-  override static var layerClass: AnyClass {
-    return CAEAGLLayer.self
-  }
+  // override static var layerClass: AnyClass {
+  //   return CAEAGLLayer.self
+  // }
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -47,18 +47,18 @@ internal final class GLView: ExpoView, EXGLContextDelegate {
     contentScaleFactor = EXUtilities.screenScale()
 
     // Initialize properties of our backing CAEAGLLayer
-    if let eaglLayer = layer as? CAEAGLLayer {
-      eaglLayer.isOpaque = true
-      eaglLayer.drawableProperties = [
-        kEAGLDrawablePropertyRetainedBacking: true,
-        kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
-      ]
-    }
+    // if let eaglLayer = layer as? CAEAGLLayer {
+    //   eaglLayer.isOpaque = true
+    //   eaglLayer.drawableProperties = [
+    //     kEAGLDrawablePropertyRetainedBacking: true,
+    //     kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
+    //   ]
+    // }
   }
 
   func runOnUIThread(_ callback: @escaping () -> Void) {
     DispatchQueue.main.sync {
-      glContext.run(in: self.eaglContext, callback: callback)
+      glContext.run(inEGLContext: self.eglContext, callback: callback)
     }
   }
 
@@ -118,7 +118,7 @@ internal final class GLView: ExpoView, EXGLContextDelegate {
 
       runOnUIThread { [self] in
         glBindRenderbuffer(GLenum(GL_RENDERBUFFER), viewColorbuffer)
-        eaglContext.renderbufferStorage(Int(GL_RENDERBUFFER), from: self.layer as? CAEAGLLayer)
+        // eaglContext.renderbufferStorage(Int(GL_RENDERBUFFER), from: self.layer as? CAEAGLLayer)
       }
 
       glFramebufferRenderbuffer(
@@ -224,7 +224,7 @@ internal final class GLView: ExpoView, EXGLContextDelegate {
         // bind renderbuffer and present it on the layer
         glContext.runAsync {
           glBindRenderbuffer(GLenum(GL_RENDERBUFFER), self.viewColorbuffer)
-          self.eaglContext.presentRenderbuffer(Int(GL_RENDERBUFFER))
+          // self.eglContext.presentRenderbuffer(Int(GL_RENDERBUFFER))
         }
 
         // mark renderbuffer as presented
@@ -248,23 +248,18 @@ internal final class GLView: ExpoView, EXGLContextDelegate {
       glBindFramebuffer(GLenum(GL_READ_FRAMEBUFFER), msaaFramebuffer)
       glBindFramebuffer(GLenum(GL_DRAW_FRAMEBUFFER), viewFramebuffer)
 
-      // glBlitFramebuffer works only on OpenGL ES 3.0, so we need a fallback to Apple's extension for OpenGL ES 2.0
-      if glContext.eaglCtx.api == .openGLES3 {
-        glBlitFramebuffer(
-          0,
-          0,
-          layerWidth,
-          layerHeight,
-          0,
-          0,
-          layerWidth,
-          layerHeight,
-          GLbitfield(GL_COLOR_BUFFER_BIT),
-          GLenum(GL_NEAREST)
-        )
-      } else {
-        glResolveMultisampleFramebufferAPPLE()
-      }
+      glBlitFramebuffer(
+        0,
+        0,
+        layerWidth,
+        layerHeight,
+        0,
+        0,
+        layerWidth,
+        layerHeight,
+        GLbitfield(GL_COLOR_BUFFER_BIT),
+        GLenum(GL_NEAREST)
+      )
 
       // Restore surrounding framebuffer
       if prevFramebuffer != 0 {

@@ -1,6 +1,6 @@
 // Copyright 2016-present 650 Industries. All rights reserved.
 
-#import <OpenGLES/EAGL.h>
+#include <libEGL/EGL/egl.h>
 #import <RnAngleGl/EXGLNativeApi.h>
 #import <ExpoModulesCore/EXModuleRegistry.h>
 
@@ -21,15 +21,15 @@
                        andModuleRegistry:(nonnull EXModuleRegistry *)moduleRegistry;
 - (void)prepare:(nullable void(^)(BOOL))callback andEnableExperimentalWorkletSupport:(BOOL)enableExperimentalWorkletSupport;
 - (BOOL)isInitialized;
-- (nonnull EAGLContext *)createSharedEAGLContext;
+- (nonnull EGLContext)createSharedEGLContext;
 - (void)runAsync:(nonnull void(^)(void))callback;
-- (void)runInEAGLContext:(nonnull EAGLContext*)context callback:(nonnull void(^)(void))callback;
+- (void)runInEGLContext:(nonnull EGLContext)context callback:(nonnull void(^)(void))callback;
 - (void)takeSnapshotWithOptions:(nonnull NSDictionary *)options resolve:(nonnull EXPromiseResolveBlock)resolve reject:(nonnull EXPromiseRejectBlock)reject;
 - (void)destroy;
 
 // "protected"
 @property (nonatomic, assign) EXGLContextId contextId;
-@property (nonatomic, strong, nonnull) EAGLContext *eaglCtx;
+@property (nonatomic, assign, nonnull) EGLContext eglCtx;
 @property (nonatomic, weak, nullable) id <EXGLContextDelegate> delegate;
 
 @end

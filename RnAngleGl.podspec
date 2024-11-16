@@ -33,4 +33,5 @@ Pod::Spec.new do |s|
   # end
 
   s.public_header_files = ['ios/**/*.h', 'common/EXGLNativeApi.h']
+  s.vendored_frameworks = 'libs/*.{xcframework}'
 end

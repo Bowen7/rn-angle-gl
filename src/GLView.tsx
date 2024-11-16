@@ -167,46 +167,46 @@ export class GLView extends React.Component<GLViewProps> {
     }
   }
 
-  // @docsMissing
-  async startARSessionAsync(): Promise<any> {
-    if (!ExponentGLViewManager.startARSessionAsync) {
-      throw new UnavailabilityError("rn-angle-gl", "startARSessionAsync");
-    }
-    return await ExponentGLViewManager.startARSessionAsync(
-      findNodeHandle(this.nativeRef)
-    );
-  }
+  // // @docsMissing
+  // async startARSessionAsync(): Promise<any> {
+  //   if (!ExponentGLViewManager.startARSessionAsync) {
+  //     throw new UnavailabilityError("rn-angle-gl", "startARSessionAsync");
+  //   }
+  //   return await ExponentGLViewManager.startARSessionAsync(
+  //     findNodeHandle(this.nativeRef)
+  //   );
+  // }
 
-  // @docsMissing
-  async createCameraTextureAsync(
-    cameraRefOrHandle: ComponentOrHandle
-  ): Promise<WebGLTexture> {
-    if (!ExponentGLObjectManager.createCameraTextureAsync) {
-      throw new UnavailabilityError("rn-angle-gl", "createCameraTextureAsync");
-    }
+  // // @docsMissing
+  // async createCameraTextureAsync(
+  //   cameraRefOrHandle: ComponentOrHandle
+  // ): Promise<WebGLTexture> {
+  //   if (!ExponentGLObjectManager.createCameraTextureAsync) {
+  //     throw new UnavailabilityError("rn-angle-gl", "createCameraTextureAsync");
+  //   }
 
-    const { exglCtxId } = this;
+  //   const { exglCtxId } = this;
 
-    if (!exglCtxId) {
-      throw new Error("GLView's surface is not created yet!");
-    }
+  //   if (!exglCtxId) {
+  //     throw new Error("GLView's surface is not created yet!");
+  //   }
 
-    const cameraTag = findNodeHandle(cameraRefOrHandle);
-    const { exglObjId } =
-      await ExponentGLObjectManager.createCameraTextureAsync(
-        exglCtxId,
-        cameraTag
-      );
-    return { id: exglObjId } as WebGLTexture;
-  }
+  //   const cameraTag = findNodeHandle(cameraRefOrHandle);
+  //   const { exglObjId } =
+  //     await ExponentGLObjectManager.createCameraTextureAsync(
+  //       exglCtxId,
+  //       cameraTag
+  //     );
+  //   return { id: exglObjId } as WebGLTexture;
+  // }
 
-  // @docsMissing
-  async destroyObjectAsync(glObject: WebGLObject): Promise<boolean> {
-    if (!ExponentGLObjectManager.destroyObjectAsync) {
-      throw new UnavailabilityError("rn-angle-gl", "destroyObjectAsync");
-    }
-    return await ExponentGLObjectManager.destroyObjectAsync(glObject.id);
-  }
+  // // @docsMissing
+  // async destroyObjectAsync(glObject: WebGLObject): Promise<boolean> {
+  //   if (!ExponentGLObjectManager.destroyObjectAsync) {
+  //     throw new UnavailabilityError("rn-angle-gl", "destroyObjectAsync");
+  //   }
+  //   return await ExponentGLObjectManager.destroyObjectAsync(glObject.id);
+  // }
 
   /**
    * Same as static [`takeSnapshotAsync()`](#takesnapshotasyncoptions),
